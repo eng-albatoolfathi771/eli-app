@@ -1,189 +1,243 @@
 import streamlit as st
 import time
 
-# إعداد الصفحة وتفعيل تصميم الموبايل
+# 1. إعداد الصفحة
 st.set_page_config(
-    page_title="Eli - Tech English",
-    page_icon="👦",
+    page_title="ELI - Learn Tech English",
+    page_icon="⚡",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# تصميم مخصص وتأثيرات حركية (Custom CSS)
+# 2. تصميم CSS احترافي يطابق الـ Dark UI الفخم في التصميم
 st.markdown("""
 <style>
-    /* خلفية التطبيق والخطوط */
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+    
+    * {
+        font-family: 'Cairo', sans-serif;
+    }
+    
     .stApp {
-        background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F6 100%);
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #0B111E !important;
+        color: #F8FAFC !important;
     }
     
-    /* بطاقة Eli التفاعلية */
-    .eli-card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        border: 2px solid #E2E8F0;
-        margin-bottom: 20px;
-        text-align: center;
-        animation: fadeIn 0.8s ease-in-out;
-    }
-    
-    /* بالون التحدث */
-    .chat-bubble {
-        background: #EBF4FF;
-        color: #1E3A8A;
-        padding: 14px 18px;
-        border-radius: 18px 18px 18px 4px;
-        font-weight: 600;
-        font-size: 1.05rem;
-        margin-top: 10px;
-        display: inline-block;
-        border: 1px solid #BFDBFE;
-    }
-    
-    /* شريط النقاط والإنجاز */
-    .stats-container {
-        display: flex;
-        justify-content: space-around;
-        background: white;
-        padding: 12px;
-        border-radius: 16px;
-        border: 1px solid #E2E8F0;
-        margin-bottom: 15px;
-    }
-    
-    .stat-item {
-        font-weight: bold;
-        font-size: 1.1rem;
+    /* الحاوية الرئيسية */
+    .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 480px !important;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* الشريط العلوي */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #151D30;
+        padding: 10px 18px;
+        border-radius: 16px;
+        border: 1px solid #1E293B;
+        margin-bottom: 18px;
+    }
+    .badge {
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .streak { color: #F59E0B; }
+    .xp { color: #38BDF8; }
+
+    /* بطاقات واجهة Eli */
+    .eli-hero-card {
+        background: linear-gradient(145deg, #17233B, #111A2C);
+        border-radius: 24px;
+        padding: 20px;
+        border: 1px solid #2A3B5C;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        margin-bottom: 18px;
+        text-align: right;
+        position: relative;
+    }
+    
+    .speech-bubble {
+        background: #1E2E4A;
+        color: #E2E8F0;
+        padding: 12px 16px;
+        border-radius: 18px 18px 4px 18px;
+        font-size: 0.95rem;
+        border: 1px solid #3B82F6;
+        display: inline-block;
+        margin-top: 8px;
+        line-height: 1.5;
+    }
+
+    /* بطاقة الدرس الحالي */
+    .lesson-card {
+        background: #141C2E;
+        border-radius: 20px;
+        padding: 18px;
+        border: 1px solid #23334E;
+        margin-bottom: 15px;
+    }
+
+    /* أزرار مخصصة متدرجة */
+    div.stButton > button {
+        background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 14px !important;
+        padding: 12px 24px !important;
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35) !important;
+    }
+    div.stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5) !important;
+    }
+
+    /* تنسيق كروت الراديو للاختيار */
+    div[data-testid="stRadio"] > label {
+        display: none;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] {
+        gap: 10px;
+    }
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
+        background: #162035 !important;
+        border: 1px solid #22324F !important;
+        border-radius: 14px !important;
+        padding: 12px 16px !important;
+        color: #F8FAFC !important;
+        font-weight: 600 !important;
+        width: 100% !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# إدارة الحالة (State Management)
+# 3. إدارة الحالة (Session State)
 if "xp" not in st.session_state:
-    st.session_state.xp = 50
+    st.session_state.xp = 1250
 if "streak" not in st.session_state:
-    st.session_state.streak = 1
-if "track" not in st.session_state:
-    st.session_state.track = None
-if "current_step" not in st.session_state:
-    st.session_state.current_step = 0
+    st.session_state.streak = 12
+if "step" not in st.session_state:
+    st.session_state.step = "home" # onboarding, home, lesson
+if "selected_track" not in st.session_state:
+    st.session_state.selected_track = "English for Python Developers"
+if "lesson_index" not in st.session_state:
+    st.session_state.lesson_index = 0
 
-# شريط الحالة العلوي (النقاط والـ Streak)
+# 4. بنك الدروس والمفردات التقنية
+LESSONS_DB = [
+    {
+        "topic": "Variables in Python",
+        "term": "variable",
+        "phonetic": "/ˈveəriəbəl/",
+        "arabic": "متغير",
+        "definition": "A container for storing data values.",
+        "example": "x = 10\nname = 'ELI'",
+        "question": "ما هو دور الـ Variable في لغات البرمجة؟",
+        "options": ["حاوية لتخزين القيم والبيانات في الذاكرة", "أمر لطباعة النتائج على الشاشة", "أداة لتشغيل السيرفر"],
+        "correct": "حاوية لتخزين القيم والبيانات في الذاكرة"
+    },
+    {
+        "topic": "Data Types",
+        "term": "Data Type",
+        "phonetic": "/ˈdeɪtə taɪp/",
+        "arabic": "نوع البيانات",
+        "definition": "Specifies the type of value a variable has (e.g., Integer, String, Boolean).",
+        "example": "age = 22 # Integer\nstatus = True # Boolean",
+        "question": "ماذا يحدد الـ Data Type في الكود؟",
+        "options": ["نوع القيمة والعمليات الممكنة عليها", "سرعة تنفيذ الكود", "اسم الدالة الرئيسية"],
+        "correct": "نوع القيمة والعمليات الممكنة عليها"
+    }
+]
+
+# 5. الشريط العلوي المشترك
 st.markdown(f"""
-<div class="stats-container">
-    <div class="stat-item" style="color: #D97706;">🔥 {st.session_state.streak} Day Streak</div>
-    <div class="stat-item" style="color: #2563EB;">⚡ {st.session_state.xp} XP</div>
+<div class="top-bar">
+    <div class="badge xp">⚡ {st.session_state.xp} XP</div>
+    <div class="badge streak">🔥 {st.session_state.streak} Streak</div>
+    <div style="font-size: 1.2rem; font-weight: 900; color: #38BDF8;">eli</div>
 </div>
 """, unsafe_allow_html=True)
 
-# بنك الأسئلة والمصطلحات التقنية
-DATA = {
-    "الذكاء الاصطناعي وعلم البيانات 🤖": [
-        {
-            "term": "Overfitting",
-            "meaning": "فرط التخصيص / الحفظ المفرط للبيانات",
-            "context": "The model has high accuracy on training data but fails on new data due to Overfitting.",
-            "question": "ماذا يعني أن النموذج يعاني من 'Overfitting'؟",
-            "options": ["حفظ بيانات التدريب بدلاً من التعلم منها", "النموذج سريع جداً في الحسابات", "نقص في حجم البيانات"],
-            "answer": "حفظ بيانات التدريب بدلاً من التعلم منها"
-        },
-        {
-            "term": "Epoch",
-            "meaning": "دورة تدريبية كاملة على كل البيانات",
-            "context": "We trained the neural network for 50 epochs.",
-            "question": "في تدريب الشبكات العصبية، ماذا يمثل الـ 'Epoch'؟",
-            "options": ["دورة تدريب واحدة عبر كامل البيانات", "معدل سرعة المعالج", "نوع من دوال التنشيط"],
-            "answer": "دورة تدريب واحدة عبر كامل البيانات"
-        }
-    ],
-    "تطوير الويب وهندسة البرمجيات 💻": [
-        {
-            "term": "API (Application Programming Interface)",
-            "meaning": "واجهة برمجة التطبيقات لتبادل البيانات",
-            "context": "The frontend communicates with the backend through a REST API.",
-            "question": "ما هو الدور الأساسي للـ API في الأنظمة؟",
-            "options": ["جسر وسيط لنقل وتبادل البيانات بين الأنظمة", "تصميم الواجهات الرسومية", "حفظ البيانات في القرص الصلب"],
-            "answer": "جسر وسيط لنقل وتبادل البيانات بين الأنظمة"
-        }
-    ]
-}
-
-# 1. شاشة اختيار المسار والترحيب
-if st.session_state.track is None:
-    st.markdown("""
-    <div class="eli-card">
-        <div style="font-size: 50px;">👦</div>
-        <div class="chat-bubble">
-            مرحباً بك! أنا <b>Eli</b> 👋<br>
-            سأكون رفيقك اليومي لإتقان المصطلحات البرمجية والإنجليزية التقنية بسهولة وبدون تعقيد.
+# ----------------- الشاشة الرئيسية (Home) -----------------
+if st.session_state.step == "home":
+    st.markdown(f"""
+    <div class="eli-hero-card">
+        <h3 style="margin: 0; color: #FFFFFF;">👋 مرحباً بك!</h3>
+        <p style="color: #94A3B8; margin: 4px 0 10px 0;">جاهز لمواصلة رحلتك التقنية اليوم؟</p>
+        <div class="speech-bubble">
+            اليوم هو يوم رائع لتعلم مصطلحات برمجية جديدة ترفع مستواك التقني! 🚀
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-    st.subheader("🎯 اختر مسارك التقني للبدء:")
-    chosen_track = st.selectbox(
-        "المجال التدريبي:",
-        list(DATA.keys()),
-        label_visibility="collapsed"
-    )
-    
-    if st.button("🚀 ابدأ المسار الآن", use_container_width=True):
-        st.session_state.track = chosen_track
-        st.session_state.current_step = 0
+
+    st.markdown(f"""
+    <div class="lesson-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="background: #2563EB; padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;">درس اليوم</span>
+            <span style="color: #38BDF8; font-size: 0.85rem; font-weight: 700;">مكتمل 60%</span>
+        </div>
+        <h3 style="color: #F8FAFC; margin: 10px 0 4px 0;">{LESSONS_DB[st.session_state.lesson_index]['topic']}</h3>
+        <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 12px;">المتغيرات في بايثون للمطورين</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("🚀 متابعة الدرس الآن", use_container_width=True):
+        st.session_state.step = "lesson"
         st.rerun()
 
-# 2. شاشة الدرس التفاعلي
-else:
-    lessons = DATA[st.session_state.track]
-    step = st.session_state.current_step
+    st.markdown("""
+    <div class="lesson-card" style="margin-top: 15px;">
+        <h4 style="margin: 0 0 10px 0; color: #E2E8F0;">📋 المهام اليومية</h4>
+        <p style="color: #10B981; margin: 4px 0; font-size: 0.9rem;">✔ تعلم 10 كلمات ومصطلحات جديدة (10/10)</p>
+        <p style="color: #38BDF8; margin: 4px 0; font-size: 0.9rem;">⏳ إكمال درس البرمجة التفاعلي (1/2)</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+# ----------------- شاشة الدرس التفاعلي (Lesson) -----------------
+elif st.session_state.step == "lesson":
+    lesson = LESSONS_DB[st.session_state.lesson_index]
     
-    if step < len(lessons):
-        item = lessons[step]
-        
-        st.progress((step + 1) / len(lessons))
-        
-        st.markdown(f"""
-        <div class="eli-card">
-            <h2 style="color: #1E40AF; margin-bottom: 5px;">{item['term']}</h2>
-            <p style="color: #475569; font-size: 1.1rem;"><b>المعنى:</b> {item['meaning']}</p>
-            <hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 15px 0;">
-            <p style="font-style: italic; color: #334155; direction: ltr; text-align: center;">
-                "{item['context']}"
-            </p>
+    st.caption(f"📚 {st.session_state.selected_track} • {lesson['topic']}")
+    st.progress(0.75)
+    
+    st.markdown(f"""
+    <div class="eli-hero-card" style="text-align: center;">
+        <span style="background: #3B82F6; padding: 3px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">كلمة جديدة 📖</span>
+        <h1 style="color: #38BDF8; margin: 10px 0 2px 0; font-size: 2.2rem;">{lesson['term']}</h1>
+        <p style="color: #94A3B8; font-size: 0.95rem; margin-bottom: 10px;">{lesson['phonetic']}</p>
+        <h3 style="color: #F59E0B; margin: 5px 0;">{lesson['arabic']}</h3>
+        <p style="color: #E2E8F0; font-size: 1rem; margin-top: 8px;">{lesson['definition']}</p>
+        <div style="background: #0B111E; padding: 10px; border-radius: 12px; margin-top: 12px; text-align: left; font-family: monospace; color: #10B981; direction: ltr;">
+            {lesson['example'].replace(chr(10), '<br>')}
         </div>
-        """, unsafe_allow_html=True)
-        
-        st.write(f"**سؤال سريع:** {item['question']}")
-        user_choice = st.radio("اختر الإجابة الصحيحة:", item['options'], key=f"q_{step}", label_visibility="collapsed")
-        
-        if st.button("تحقق من الإجابة ✔️", use_container_width=True):
-            if user_choice == item['answer']:
-                st.session_state.xp += 15
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write(f"**سؤال الفهم:** {lesson['question']}")
+    choice = st.radio("خيارات الإجابة:", lesson['options'], label_visibility="collapsed")
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("تحقق من إجابتي ✔️", use_container_width=True):
+            if choice == lesson['correct']:
+                st.session_state.xp += 25
                 st.balloons()
-                st.success("🎉 إجابة صحيحة ومتقنة! +15 نقطة XP")
-                time.sleep(1)
-                st.session_state.current_step += 1
+                st.success("🎉 إجابة رائعة وصحيحة! +25 نقطة XP")
+                time.sleep(1.2)
+                st.session_state.step = "home"
                 st.rerun()
             else:
-                st.error("💡 ليست الإجابة الدقيقة، حاول مجدداً أو راجع سياق الجملة أعلاه!")
-    else:
-        st.markdown("""
-        <div class="eli-card">
-            <div style="font-size: 55px;">🏆</div>
-            <h2 style="color: #059669;">أحسنت! أكملت درس اليوم بنجاح</h2>
-            <p>أصبحت أكثر جاهزية لمقابلات العمل وقراءة التوثيقات التقنية باللغة الإنجليزية.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("🔄 بدء مسار جديد", use_container_width=True):
-            st.session_state.track = None
-            st.session_state.current_step = 0
+                st.error("💡 حاول مجدداً، ركز في تعريف الحاوية والتخزين.")
+    with col_b:
+        if st.button("⬅ العودة للرئيسية", use_container_width=True):
+            st.session_state.step = "home"
             st.rerun()
